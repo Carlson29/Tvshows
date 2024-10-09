@@ -1,0 +1,103 @@
+﻿@using RestSharp;
+@using System.Text.Json;
+@using System.Xml.Serialization;
+@using static global::Movies.Quote
+@using static global::Movies.MovieJson
+<h3>MovieSection</h3>
+
+<input @bind=searchValue />
+<button @onclick="getShows"> search</button>
+
+<div>
+
+    @if (searchedMovie != null)
+    {
+        <img src="@searchedMovie.Image" />
+        <p>Summary 
+
+            @searchedMovie.Description
+            
+        </p>
+        }
+    
+
+</div>
+   <b>Qoutes from breaking bad</b>
+@if (allQoutes.Count>0)
+{
+@foreach (Class2 q in allQoutes)
+{
+      <p>@q.quote</p> 
+      <p>author is @q.author</p>
+      <br />
+}
+   }
+<div>
+
+
+</div>
+
+@code {
+    string searchValue=null;
+    Rootobject movie = null;
+    Movies searchedMovie = null;
+    List<Class2> allQoutes = new List<Class2>();
+
+    public void getShows()
+    {
+        if (searchValue!=null)
+        {
+            var client = new RestClient("https://api.tvmaze.com/singlesearch/shows?q="+searchValue);
+            var request = new RestRequest();
+            var response = client.Execute(request);
+            if (response!=null) {
+                movie = JsonSerializer.Deserialize<Rootobject>(response.Content);
+                if (movie != null) {
+                    if (movie.rating.average != null)
+                    {
+                        searchedMovie = new Movies(movie.name, (Double)movie.rating.average, movie.summary, movie.image.original, movie.genres);
+                    }
+                    if (movie.rating.average == null)
+                    {
+                        searchedMovie = new Movies(movie.name, movie.summary, movie.image.original, movie.genres);
+                    }
+                    getQuotes();
+                }
+                else if (movie==null)
+                {
+                    searchedMovie = null;
+                    allQoutes.Clear();
+                }
+            }
+            // Console.WriteLine(movie.name);
+
+
+
+        }
+    }
+
+    public void getQuotes()
+    {
+        if (searchValue != null)
+        {
+            var client = new RestClient("https://api.breakingbadquotes.xyz/v1/quotes/5");
+            var request = new RestRequest();
+            var response = client.Execute(request);
+            Class2 [] quotes = JsonSerializer.Deserialize<Class2 []>(response.Content);
+            if (quotes.Length>0)
+            {
+                allQoutes.Clear();
+            }
+            for (var i=0; i<quotes.Length; i++)
+            {
+                
+                allQoutes.Add(quotes[i]);
+            }
+            // Console.WriteLine(movie.name);
+
+
+
+        }
+    }
+
+}
