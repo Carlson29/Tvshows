@@ -12,6 +12,7 @@
         {
             public string quote { get; set; }
             public string author { get; set; }
+
         }
 
     }
