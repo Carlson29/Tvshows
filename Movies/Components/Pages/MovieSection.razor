@@ -15,17 +15,32 @@
         <b>@searchedMovie.MovieName</b>
         <br />
         <img src="@searchedMovie.Image" />
-        <p> 
+        <p>
+            Rating
+            @if (@searchedMovie.Rating!=null)
+            {
+                @searchedMovie.Rating
+           }
+
             Summary 
 
             @searchedMovie.Description
             
         </p>
         }
+    @if (searched == true && foundShow==false)
+    {
+        <p>Sorry no match found</p>
+    }
+
     
 
 </div>
-   <b>Qoutes from breaking bad</b>
+@if (searched == true && foundShow==true)
+    {
+   <b> Qoutes from breaking bad</b>
+    }
+
 @if (allQoutes.Count>0)
 {
 @foreach (Class2 q in allQoutes)
@@ -45,9 +60,12 @@
     Rootobject movie = null;
     Movies searchedMovie = null;
     List<Class2> allQoutes = new List<Class2>();
+    Boolean searched = false;
+    public Boolean foundShow = false;
 
     public void getShows()
     {
+        searched = true;
         if (searchValue!=null)
         {
             var client = new RestClient("https://api.tvmaze.com/singlesearch/shows?q="+searchValue);
@@ -65,15 +83,19 @@
                         searchedMovie = new Movies(movie.name, movie.summary, movie.image.original, movie.genres);
                     }
                     getQuotes();
+                    foundShow = true;
                 }
                 else if (movie==null)
                 {
                     searchedMovie = null;
                     allQoutes.Clear();
+                    foundShow = false;
+                   
                 }
+                
             }
             // Console.WriteLine(movie.name);
-
+            
 
 
         }
