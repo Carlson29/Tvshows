@@ -1,7 +1,7 @@
 ﻿
 namespace Movies
 {
-    public class Movies: Genre
+    public class Movies: Genre, Interface
     {
         private string movieName;
         private double? rating;
@@ -65,7 +65,13 @@ namespace Movies
 
         public override string? ToString()
         {
-            return base.ToString();
+            string val = "";
+            for (int i = 0; i <GenreName.Length; i++)
+            {
+                val += "," + GenreName[i];
+            }
+
+            return "[Name=" + movieName + ",rating=" + rating + ", description=" + description + ",image=" + image + ", genre Description=" + GenreDescription+ ", GenreName=[" + val + "]]";
         }
     }
 }

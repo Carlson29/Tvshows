@@ -1,10 +1,10 @@
 ﻿
 namespace Movies
 {
-    public class Genre
+    public abstract class Genre: Interface
     {
         private string [] genreName;
-        private string genreDescription;
+        private string? genreDescription;
 
         public Genre(string[] genreName, string genreDescription)
         {
@@ -28,7 +28,7 @@ namespace Movies
             set { this.genreName = value; }
 
         }
-        public string GenreDescription
+        public string? GenreDescription
         {
             get { return this.genreDescription; }
             set { this.genreDescription = value;}
@@ -46,6 +46,17 @@ namespace Movies
         public override int GetHashCode()
         {
             return HashCode.Combine(genreName, genreDescription, GenreName, GenreDescription);
+        }
+
+        public override string? ToString()
+        {
+            string val = "";
+            for (int i=0; i<genreName.Length; i++)
+            {
+                val +=  "," + genreName[i];
+            }
+
+            return "[Genre Description=" + GenreDescription + ", GenreName=[" +val + "]]";
         }
     }
 }

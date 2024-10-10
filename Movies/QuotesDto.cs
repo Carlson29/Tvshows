@@ -1,7 +1,7 @@
 ﻿
 namespace Movies
 {
-    public class QuotesDto
+    public class QuotesDto:Interface
     {
         private string quote;
         private string author;
