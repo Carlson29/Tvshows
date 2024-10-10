@@ -6,33 +6,56 @@
 @using System;
 @using System.IO;
 
+<style>
+body{
+    text-align:center;
+    background-color:grey;
+}
+input{
+    border-radius:2vw;
+}
 
+img{
+    height:300px;
+    width:300px;
+        border-radius: 1vw;
+}
+button{
+        border-radius: 1vw;
+        color:rebeccapurple;
+}
+
+    #summary{
+     border-left:2vw;
+        border-right: 2vw;
+    }
+
+</style>
 
 
 <h3>MovieSection</h3>
 
 <input @bind=searchValue />
 <button @onclick="getShows"> search</button>
-
+<br />
 <div>
 
     @if (searchedMovie != null)
     {
-        <b>@searchedMovie.MovieName</b>
+        <b><p>@searchedMovie.MovieName</p></b>
         <br />
         <img src="@searchedMovie.Image" />
         <p>
-            Rating
+            Rating:
             @if (@searchedMovie.Rating!=null)
             {
                 @searchedMovie.Rating
            }
-
-            Summary 
-
-            @searchedMovie.Description
-            
         </p>
+            <br />
+        <p id="summary"> 
+            Summary: @searchedMovie.Description 
+            </p>
         }
     @if (searched == true && foundShow==false)
     {
