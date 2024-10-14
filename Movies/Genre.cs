@@ -11,7 +11,7 @@ namespace Movies
             this.genreName = genreName;
             this.genreDescription = genreDescription;
         }
-
+        
         public Genre()
         {
         }
