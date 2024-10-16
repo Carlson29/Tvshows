@@ -1,0 +1,152 @@
+﻿@using RestSharp
+@using System.Text.Json
+@using System.Xml.Serialization
+@using static global::Movies.Quote
+@using static global::Movies.MovieJson
+@using System
+@using System.IO
+@page "/QuoteSection"
+
+<style>
+    body{
+        text-align:center;
+        background-color:grey;
+    }
+    input{
+        border-radius:2vw;
+        width:6vw;
+    }
+
+    img{
+        height:300px;
+        width:300px;
+            border-radius: 1vw;
+    }
+    button{
+            border-radius: 1vw;
+            color:rebeccapurple;
+    }
+
+        #summary{
+         border-left:2vw;
+            border-right: 6vw;
+        }
+
+</style>
+
+<h3>QuoteSection</h3>
+<label>Enter number of quotes to display greater than 0 and less than 6</label>
+<br />
+<input type="number" max="5" min="1" @bind=quoteNum />
+<button @onclick="getQuotes"> show</button>
+
+<br />
+
+@if (quoteNum != null && quoteNum > 0 && searched == true)
+{
+    <b> Qoutes from breaking bad</b>
+}
+
+@if (allQoutes.Count > 0)
+{
+    @foreach (QuotesDto q in allQoutes)
+    {
+        <p>@q.Quote</p>
+        <p>author is @q.Author</p>
+        <br />
+    }
+}
+
+@if (quoteNum <= 0 && searched == true  && quoteNum > 5)
+{
+
+    <p>Invalid number entered</p>
+}
+
+
+@code {
+    public int? quoteNum;
+    List<QuotesDto> allQoutes = new List<QuotesDto>();
+    bool searched = false; 
+
+    public void getQuotes()
+    {
+        searched = true;
+        if (quoteNum != null && quoteNum > 0 && quoteNum <6)
+        {
+            var client = new RestClient("https://api.breakingbadquotes.xyz/v1/quotes/" + quoteNum);
+            var request = new RestRequest();
+            var response = client.Execute(request);
+            Class2[] quotes = JsonSerializer.Deserialize<Class2[]>(response.Content);
+
+            if (quotes != null && quotes.Length > 0) // Check for null
+            {
+                allQoutes.Clear();
+                // Test if quotes were found
+                Console.WriteLine("Quotes were found");
+            }
+
+            for (var i = 0; i < quotes.Length; i++)
+            {
+                bool found = false;
+                QuotesDto qdto = new QuotesDto(quotes[i].quote, quotes[i].author);
+                allQoutes.Add(qdto);
+
+                try
+                {
+                    // Read from the file
+                    using (StreamReader sr = new StreamReader("quotesFile.txt"))
+                    {
+                        String line;
+                        // Loop to check if the quote is already in the file
+                        while ((line = sr.ReadLine()) != null && !found && !string.IsNullOrWhiteSpace(line))
+                        {
+                            string[] quoteAttributes = line.Split("#");
+                            if (quoteAttributes.Length == 2)
+                            {
+                                QuotesDto fileQdto = new QuotesDto(quoteAttributes[0], quoteAttributes[1]);
+                                // Write down all valid Quotes from file to the console
+                                Console.WriteLine(quoteAttributes[0] + "," + quoteAttributes[1]);
+                                // Check if it is the same
+                                if (qdto.Equals(fileQdto))
+                                {
+                                    found = true;
+                                }
+                            }
+                        }
+                    }
+
+                    Console.WriteLine(qdto.ToString());
+
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Exception: " + e.Message);
+                }
+
+                // If quote is not in the file
+                if (!found)
+                {
+                    try
+                    {
+                        // Add to the end of the file
+                        using (StreamWriter sw = File.AppendText("quotesFile.txt"))
+                        {
+                            // Write to the file
+                            sw.WriteLine(qdto.Quote + "#" + qdto.Author);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Exception: " + e.Message);
+                    }
+                }
+            }
+        }
+        else
+        {
+            allQoutes.Clear();
+            Console.WriteLine("Invalid input entered");
+        }
+    }
+}

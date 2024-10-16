@@ -7,28 +7,30 @@
 @using System.IO;
 
 <style>
-body{
-    text-align:center;
-    background-color:grey;
-}
-input{
-    border-radius:2vw;
-}
+	body {
+		text-align: center;
+		background-color: grey;
+	}
 
-img{
-    height:300px;
-    width:300px;
-        border-radius: 1vw;
-}
-button{
-        border-radius: 1vw;
-        color:rebeccapurple;
-}
+	input {
+		border-radius: 2vw;
+	}
 
-    #summary{
-     border-left:2vw;
-        border-right: 2vw;
-    }
+	img {
+		height: 300px;
+		width: 300px;
+		border-radius: 1vw;
+	}
+
+	button {
+		border-radius: 1vw;
+		color: rebeccapurple;
+	}
+
+	#summary {
+		border-left: 2vw;
+		border-right: 2vw;
+	}
 
 </style>
 
@@ -40,190 +42,86 @@ button{
 <br />
 <div>
 
-    @if (searchedMovie != null)
-    {
-        <b><p>@searchedMovie.MovieName</p></b>
-        <br />
-        <img src="@searchedMovie.Image" />
-        <p>
-            Rating:
-            @if (@searchedMovie.Rating!=null)
-            {
-                @searchedMovie.Rating
-           }
-        </p>
-            <br />
-        <p id="summary"> 
-            Summary: @searchedMovie.Description 
-            </p>
-        }
-    @if (searched == true && foundShow==false)
-    {
-        <p>Sorry no match found</p>
-    }
+	@if (searchedMovie != null)
+	{
+		<b><p>@searchedMovie.MovieName</p></b>
+		<br />
+		<img src="@searchedMovie.Image" />
+		<p>
+			Rating:
+			@if (@searchedMovie.Rating != null)
+			{
+				@searchedMovie.Rating
+			}
+		</p>
+		<br />
+		<p id="summary">
+			Summary: @searchedMovie.Description
+		</p>
+	}
+	@if (searched == true && foundShow == false)
+	{
+		<p>Sorry no match found</p>
+	}
 
-    
+
 
 </div>
-@if (searched == true && foundShow==true)
-    {
-   <b> Qoutes from breaking bad</b>
-    }
 
-@if (allQoutes.Count>0)
-{
-    @foreach (QuotesDto q in allQoutes)
-{
-      <p>@q.Quote</p> 
-      <p>author is @q.Author</p>
-      <br />
-}
-   }
 <div>
-
-
 </div>
 
 @code {
-    string searchValue=null;
-    Rootobject movie = null;
-    Movies searchedMovie = null;
-    List<QuotesDto> allQoutes = new List<QuotesDto>();
-    Boolean searched = false;
-    public Boolean foundShow = false;
+	string searchValue = null;
+	Rootobject movie = null;
+	Movies searchedMovie = null;
+	bool searched = false;
+	bool foundShow = false;
 
-    public void getShows()
-    {
-        searched = true;
-        if (searchValue!=null)
-        {
-            var client = new RestClient("https://api.tvmaze.com/singlesearch/shows?q="+searchValue);
-            var request = new RestRequest();
-            var response = client.Execute(request);
-            if (response!=null) {
-                movie = JsonSerializer.Deserialize<Rootobject>(response.Content);
-                if (movie != null) {
-                    if (movie.rating.average != null)
-                    {
-                        searchedMovie = new Movies(movie.name, (Double)movie.rating.average, movie.summary, movie.image.original, movie.genres);
-                    }
-                    if (movie.rating.average == null)
-                    {
-                        searchedMovie = new Movies(movie.name, movie.summary, movie.image.original, movie.genres);
-                    }
-                    //test if a match was found
-                    Console.WriteLine(searchedMovie.MovieName + " was found");
-                    foundShow = true;
-                    getQuotes();
-                 
-                    
-                }
-                else if (movie==null)
-                {
-                    searchedMovie = null;
-                    allQoutes.Clear();
-                    foundShow = false;
-                    //test if no match was found
-                    Console.WriteLine("no match found for film or series");
-
-                }
-
-            }
-           
+	public void getShows()
+	{
+		searched = true;
+		if (searchValue != null)
+		{
+			var client = new RestClient("https://api.tvmaze.com/singlesearch/shows?q=" + searchValue);
+			var request = new RestRequest();
+			var response = client.Execute(request);
+			if (response != null)
+			{
+				movie = JsonSerializer.Deserialize<Rootobject>(response.Content);
+				if (movie != null)
+				{
+					if (movie.rating.average != null)
+					{
+						searchedMovie = new Movies(movie.name, (Double)movie.rating.average, movie.summary, movie.image.original, movie.genres);
+					}
+					if (movie.rating.average == null)
+					{
+						searchedMovie = new Movies(movie.name, movie.summary, movie.image.original, movie.genres);
+					}
+					//test if a match was found
+					Console.WriteLine(searchedMovie.MovieName + " was found");
+					foundShow = true;
 
 
+				}
+				else if (movie == null)
+				{
+					searchedMovie = null;
+					foundShow = false;
+					//test if no match was found
+					Console.WriteLine("no match found for film or series");
 
-        }
-    }
+				}
 
-    public void getQuotes()
-    {
-        if (searchValue != null)
-        {
-            var client = new RestClient("https://api.breakingbadquotes.xyz/v1/quotes/5");
-            var request = new RestRequest();
-            var response = client.Execute(request);
-            Class2 [] quotes = JsonSerializer.Deserialize<Class2 []>(response.Content);
-            if (quotes.Length>0)
-            {
-                allQoutes.Clear();
-                //test if qoutes were found
-                Console.WriteLine("quotes were found");
-            }
-            for (var i=0; i<quotes.Length; i++)
-            {
-                Boolean found = false;
-                QuotesDto qdto = new QuotesDto(quotes[i].quote, quotes[i].author);
-                allQoutes.Add(qdto);
-              
-                try
-                {
-                    //read from the file
-                    StreamReader sr = new StreamReader("quotesFile.txt");
-
-                    String line = sr.ReadLine();
-                    found = false;
-                    //loop to check if the quote is already in the file present 
-                    while (line != null && found==false && line!="")
-                    {
-
-                        string [] quoteAttributes = line.Split("#");
-                        if (quoteAttributes.Length == 2)
-                        {
-                            QuotesDto fileQdto = new QuotesDto(quoteAttributes[0], quoteAttributes[1]);
-                            //write down all valid Quotes from file to the console
-                            Console.WriteLine(quoteAttributes[0] + "," + quoteAttributes[1]);
-                            //check if it is the same
-                            if (qdto.Equals(fileQdto))
-                            {
-                                found = true;
-                            }
-                        }
-                        line = sr.ReadLine();
-                    }
-                    Console.WriteLine(qdto.ToString());
-                    //close the file
-                    sr.Close();
-                   
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("Exception: " + e.Message);
-                }
+			}
 
 
 
 
-
-                //if quote is not in the file
-                if (found==false) {
-                    try
-                    {
-                        //add to the end of the file
-                        StreamWriter sw = File.AppendText("quotesFile.txt");
-                       
-                        //write to the file
-                        sw.WriteLine(qdto.Quote + "#" + qdto.Author);
-
-                      
-                        sw.Close();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine("Exception: " + e.Message);
-                    }
+		}
+	}
 
 
-                }
-
-            }
-           
-
-            
-
-
-
-        }
-    }
 
 }
